@@ -42,10 +42,17 @@ class PositionMessage {
   int position;
 }
 
+class DurationMessage {
+  DurationMessage(this.textureId, this.duration);
+  int textureId;
+  int duration;
+}
+
 class CreateMessage {
   CreateMessage({required this.httpHeaders});
   String? asset;
   String? uri;
+  String? adUri;
   String? packageName;
   String? formatHint;
   Map<String?, String?> httpHeaders;
@@ -66,6 +73,7 @@ abstract class AndroidVideoPlayerApi {
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
   void play(TextureMessage msg);
   PositionMessage position(TextureMessage msg);
+  DurationMessage duration(TextureMessage msg);
   void seekTo(PositionMessage msg);
   void pause(TextureMessage msg);
   void setMixWithOthers(MixWithOthersMessage msg);

@@ -18,6 +18,7 @@ import io.flutter.plugins.videoplayer.Messages.LoopingMessage;
 import io.flutter.plugins.videoplayer.Messages.MixWithOthersMessage;
 import io.flutter.plugins.videoplayer.Messages.PlaybackSpeedMessage;
 import io.flutter.plugins.videoplayer.Messages.PositionMessage;
+import io.flutter.plugins.videoplayer.Messages.DurationMessage;
 import io.flutter.plugins.videoplayer.Messages.TextureMessage;
 import io.flutter.plugins.videoplayer.Messages.VolumeMessage;
 import io.flutter.view.TextureRegistry;
@@ -139,16 +140,19 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
               "asset:///" + assetLookupKey,
               null,
               null,
+              null,
               options);
     } else {
       @SuppressWarnings("unchecked")
       Map<String, String> httpHeaders = arg.getHttpHeaders();
+      Log.d("myTag", arg.getAdUri());
       player =
           new VideoPlayer(
               flutterState.applicationContext,
               eventChannel,
               handle,
               arg.getUri(),
+              arg.getAdUri(),
               arg.getFormatHint(),
               httpHeaders,
               options);
@@ -192,6 +196,17 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
             .setPosition(player.getPosition())
             .setTextureId(arg.getTextureId())
             .build();
+    player.sendBufferingUpdate();
+    return result;
+  }
+
+  public DurationMessage duration(TextureMessage arg) {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    DurationMessage result =
+            new DurationMessage.Builder()
+                    .setDuration(player.getDuration())
+                    .setTextureId(arg.getTextureId())
+                    .build();
     player.sendBufferingUpdate();
     return result;
   }

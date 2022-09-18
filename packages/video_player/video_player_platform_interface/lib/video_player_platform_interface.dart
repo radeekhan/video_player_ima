@@ -93,6 +93,10 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
     throw UnimplementedError('getPosition() has not been implemented.');
   }
 
+  Future<Duration> getDuration(int textureId) {
+    throw UnimplementedError('getPosition() has not been implemented.');
+  }
+
   /// Returns a widget displaying the video with a given textureID.
   Widget buildView(int textureId) {
     throw UnimplementedError('buildView() has not been implemented.');
@@ -125,6 +129,7 @@ class DataSource {
   DataSource({
     required this.sourceType,
     this.uri,
+    this.adUri,
     this.formatHint,
     this.asset,
     this.package,
@@ -142,6 +147,8 @@ class DataSource {
   /// This will be in different formats depending on the [DataSourceType] of
   /// the original video.
   final String? uri;
+
+  final String? adUri;
 
   /// **Android only**. Will override the platform's generic file format
   /// detection with whatever is set here.

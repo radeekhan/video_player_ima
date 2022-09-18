@@ -19,6 +19,11 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.exoplayer2.ext.ima.ImaAdsLoader;
+import com.google.android.exoplayer2.MediaItem.AdsConfiguration;
+import com.google.android.exoplayer2.source.MediaSource.Factory;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.Player.Listener;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -39,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import android.util.Log;
 
 final class VideoPlayer {
   private static final String FORMAT_SS = "ss";
@@ -47,6 +53,10 @@ final class VideoPlayer {
   private static final String FORMAT_OTHER = "other";
 
   private ExoPlayer exoPlayer;
+
+ // private StyledPlayerView playerView;
+
+  private ImaAdsLoader adsLoader;
 
   private Surface surface;
 
@@ -65,6 +75,7 @@ final class VideoPlayer {
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
       String dataSource,
+      String adSource,
       String formatHint,
       @NonNull Map<String, String> httpHeaders,
       VideoPlayerOptions options) {
@@ -72,9 +83,27 @@ final class VideoPlayer {
     this.textureEntry = textureEntry;
     this.options = options;
 
-    ExoPlayer exoPlayer = new ExoPlayer.Builder(context).build();
+    // ExoPlayer exoPlayer = new ExoPlayer.Builder(context)
+    // .setMediaSourceFactory(mediaSourceFactory)
+    // .build();
+    Uri contentUri = Uri.parse(dataSource);
+
+
+    Uri adTagUri = Uri.parse("");
+
+    if(adSource!=null){
+      adTagUri = Uri.parse(adSource);
+    }
+
+  //  Uri adTagUri = Uri.parse(adSource);
 
     Uri uri = Uri.parse(dataSource);
+   
+
+    adsLoader = new ImaAdsLoader.Builder(context).build();
+
+    StyledPlayerView playerView =new StyledPlayerView(context);
+
     DataSource.Factory dataSourceFactory;
 
     if (isHTTP(uri)) {
@@ -93,7 +122,37 @@ final class VideoPlayer {
 
     MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
 
-    exoPlayer.setMediaSource(mediaSource);
+    DataSource.Factory dataSourceFactory1 = new DefaultDataSource.Factory(context);
+
+    MediaSource.Factory mediaSourceFactory =
+    new DefaultMediaSourceFactory(dataSourceFactory1)
+            .setLocalAdInsertionComponents(unusedAdTagUri -> adsLoader,playerView);
+            
+
+    exoPlayer = new ExoPlayer.Builder(context)
+    .setMediaSourceFactory(mediaSourceFactory)
+    .build();
+
+    adsLoader.setPlayer(exoPlayer);
+
+//    Uri contentUri = Uri.parse("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+//
+//    Uri adTagUri = Uri.parse("https://api.deepto.tv/v1/ads/campaigns/1.xml");
+
+
+
+
+  
+    MediaItem mediaItem =
+        new MediaItem.Builder()
+            .setUri(contentUri)
+            .setAdsConfiguration(new MediaItem.AdsConfiguration.Builder(adTagUri).build())
+            .build();
+
+    exoPlayer.setMediaItem(mediaItem);
+
+
+   // exoPlayer.setMediaSource(mediaSource);
     exoPlayer.prepare();
 
     setUpVideoPlayer(exoPlayer, new QueuingEventSink());
@@ -281,6 +340,10 @@ final class VideoPlayer {
 
   long getPosition() {
     return exoPlayer.getCurrentPosition();
+  }
+
+  long getDuration() {
+    return exoPlayer.getDuration();
   }
 
   @SuppressWarnings("SuspiciousNameCombination")

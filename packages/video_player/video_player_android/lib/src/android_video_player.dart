@@ -35,6 +35,7 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
     String? asset;
     String? packageName;
     String? uri;
+    String? adUri;
     String? formatHint;
     Map<String, String> httpHeaders = <String, String>{};
     switch (dataSource.sourceType) {
@@ -44,6 +45,7 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
         break;
       case DataSourceType.network:
         uri = dataSource.uri;
+        adUri= dataSource.adUri;
         formatHint = _videoFormatStringMap[dataSource.formatHint];
         httpHeaders = dataSource.httpHeaders;
         break;
@@ -58,6 +60,7 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
       asset: asset,
       packageName: packageName,
       uri: uri,
+      adUri: adUri,
       httpHeaders: httpHeaders,
       formatHint: formatHint,
     );
@@ -115,6 +118,13 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
     final PositionMessage response =
         await _api.position(TextureMessage(textureId: textureId));
     return Duration(milliseconds: response.position);
+  }
+
+  @override
+  Future<Duration> getDuration(int textureId) async {
+    final DurationMessage response =
+    await _api.duration(TextureMessage(textureId: textureId));
+    return Duration(milliseconds: response.duration);
   }
 
   @override
